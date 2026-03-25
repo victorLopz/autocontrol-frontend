@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AutoControl Frontend
 
-## Getting Started
+AutoControl Pro is a modern web application designed for automotive workshop management, including service orders, clients, inventory, and billing.
 
-First, run the development server:
+This repository contains the frontend application built with Next.js using a scalable architecture based on Clean Architecture and Domain-Driven Design (DDD).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Tech Stack
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Next.js (App Router)
+- TypeScript
+- Tailwind CSS
+- Clean Architecture + DDD
+- Modular architecture by feature (auth, dashboard, etc.)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🧠 Architecture
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The project follows a modular structure:
 
-## Learn More
+- `modules/` → Business domains (auth, dashboard, etc.)
+- `shared/` → Cross-cutting concerns (UI, utils, infrastructure)
+- `app/` → Next.js routing layer
 
-To learn more about Next.js, take a look at the following resources:
+Each module is divided into:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `domain` → Business rules
+- `application` → Use cases
+- `infrastructure` → External integrations
+- `presentation` → UI layer
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🎯 Goal
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Build a scalable, maintainable, and production-ready frontend for a business management system.
