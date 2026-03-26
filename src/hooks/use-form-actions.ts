@@ -1,85 +1,81 @@
-import { errorSlice } from "@//store/slices/errors";
-import { useRouter } from "next/navigation";
-import { errorHandler } from "@//utils/error/error-handler";
-import { AlertType } from "@//types/alert";
-import { FormActionValueType, LoginType } from "@//types/form-action";
+import { useRouter } from 'next/navigation';
+import { ROUTES } from '@//shared/constants/routes.constants';
+import { statusErrorHandled } from '@//shared/constants/status-error';
+import { useAppDispatch } from '@//store/hooks';
+import { sendLogin } from '@//store/actions/send-login';
+import type { AlertType } from '@//types/alert';
+import type { FormActionValueType, LoginType } from '@//types/form-action';
+import type { ApiResponseErrorType } from '@//shared/utils/error/api-response-errors';
+
+export const FORM_ACTIONS = {
+  LOGIN: 'LOGIN',
+} as const;
+
+type FormActionType = keyof typeof FORM_ACTIONS;
+
+type ExecuteParams = {
+  action: FormActionType;
+  values?: FormActionValueType;
+  onAlert?: (alert: AlertType) => void;
+  onGetErrorCode?: (errorCode: string, errorData?: ApiResponseErrorType) => void;
+  onSuccess?: () => void;
+};
+
+function getErrorCode(error: ApiResponseErrorType) {
+  if (error.status === 401) {
+    return statusErrorHandled.LoginInvalidCredentials;
+  }
+
+  return undefined;
+}
 
 const useFormActions = () => {
-  const submitStartedData = useSubmitStartedData();
+  const dispatch = useAppDispatch();
   const router = useRouter();
 
-  const execute = async <T>({
-    action,
-    values,
-    onAlert,
-    onGetErrorCode,
-    onSuccess
-  }: {
-    action: keyof typeof onboarding_form_actions;
-    values?: FormActionValueType;
-    onAlert?: (alert: AlertType) => void;
-    onGetErrorCode?: (errorCode: string, errorData?: any) => void;
-    onSuccess?: () => void;
-  }) => {
+  const handleExecutionError = (
+    error: ApiResponseErrorType,
+    onAlert?: (alert: AlertType) => void,
+    onGetErrorCode?: (errorCode: string, errorData?: ApiResponseErrorType) => void,
+  ) => {
+    const errorCode = getErrorCode(error);
+
+    if (errorCode && onGetErrorCode) {
+      onGetErrorCode(errorCode, error);
+      return;
+    }
+
+    if (onAlert) {
+      onAlert({
+        title: 'No fue posible continuar',
+        description: error.message,
+        buttonText: 'Entendido',
+        className: 'bg-red-600 text-white',
+        isInput: false,
+      });
+    }
+  };
+
+  const execute = async ({ action, values, onAlert, onGetErrorCode, onSuccess }: ExecuteParams) => {
     try {
       switch (action) {
-        case "LOGIN":
-          await submitStartedData.execute(values as LoginType);
+        case FORM_ACTIONS.LOGIN:
+          await dispatch(sendLogin(values as LoginType)).unwrap();
+          router.push(ROUTES.DASHBOARD);
           break;
         default:
           throw new Error(`Unhandled action type: ${action}`);
       }
 
-      if (onSuccess) onSuccess();
-    } catch (error: any) {
-      await handleExecutionError(
-        {
-          errorData: error,
-          action: action
+      onSuccess?.();
+    } catch (error) {
+      handleExecutionError(
+        (error as ApiResponseErrorType) ?? {
+          message: 'Unexpected form action error',
         },
         onAlert,
-        onGetErrorCode
+        onGetErrorCode,
       );
-    }
-  };
-
-  const handleExecutionError = async (
-    error: any,
-    onAlert?: (alert: AlertType) => void,
-    onGetErrorCode?: (errorCode: string, errorData?: any) => void
-  ) => {
-    let { errorData = {}, action } = error ?? {};
-    if (Object.keys(errorData).length) {
-      const alertError = errorHandler.getAlertError(errorData);
-      const errorCode = errorHandler.getErrorCode(errorData);
-
-      if (alertError && onAlert) {
-        onAlert(alertError);
-        return;
-      }
-
-      if (errorCode && onGetErrorCode) {
-        onGetErrorCode(errorCode, errorData.extraData);
-        return;
-      }
-
-      if (process.env.NEXT_PUBLIC_USE_ERROR_PAGE === "true") {
-        // If error is unknown, save error and redirect to error page
-        dispatch(
-          errorSlice.actions.save({
-            message: errorData.message,
-            code: errorData.code ?? errorData.name,
-            detail: errorData.detail ?? errorData.stack
-          })
-        );
-        router.push("error-page");
-      } else {
-        if (errorData instanceof Error) {
-          errorData = {
-            message: error.error.message
-          };
-        }
-      }
     }
   };
 
