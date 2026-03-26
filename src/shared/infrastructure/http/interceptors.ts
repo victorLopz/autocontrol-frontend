@@ -1,4 +1,4 @@
-import { cookie } from "@/src/shared/infrastructure/lib/cookie";
+import { cookie } from "@/shared/infrastructure/lib/cookie";
 
 const ACCESS_TOKEN_KEY = "access_token";
 

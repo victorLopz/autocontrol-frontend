@@ -1,8 +1,8 @@
-import { env } from "@/src/shared/infrastructure/config/env";
+import { env } from "@/shared/infrastructure/config/env";
 import {
   buildDefaultHeaders,
   handleHttpError
-} from "@/src/shared/infrastructure/http/interceptors";
+} from "@/shared/infrastructure/http/interceptors";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 

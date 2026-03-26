@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/src/shared/utils/classnames";
+import { cn } from "@//shared/utils/classnames";
 
 type FormWrapperType = {
   children: React.ReactNode;

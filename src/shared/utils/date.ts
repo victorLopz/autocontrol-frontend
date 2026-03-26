@@ -1,7 +1,7 @@
 import {
   DEFAULT_LOCALE,
   DEFAULT_TIMEZONE
-} from "@/src/shared/constants/app.constants";
+} from "@//shared/constants/app.constants";
 
 export function formatDate(
   date: Date | string,

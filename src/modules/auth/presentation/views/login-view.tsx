@@ -1,12 +1,37 @@
 "use client";
 
-import { Card } from "@/src/shared/presentation/components/ui/card";
-import { Input } from "@/src/shared/presentation/components/ui/input";
-import { Button } from "@/src/shared/presentation/components/ui/button";
-import { Car, Lock, Mail, EyeOff } from "lucide-react"; // Importa iconos
-import FormWrapper from "@/src/shared/presentation/components/ui/form-wrapper";
+import { useState } from "react";
+import { Card } from "@//shared/presentation/components/ui/card";
+import { Input } from "@//shared/presentation/components/ui/input";
+import { Button } from "@//shared/presentation/components/ui/button";
+import { selectAuthError, selectAuthLoading } from "@//store/selectors/auth";
+import { useAppSelector } from "@//store/hooks";
+import useLogin from "@//hooks/user-login";
+import { Car, Lock, Mail, Eye, EyeOff } from "lucide-react";
+import FormWrapper from "@//shared/presentation/components/ui/form-wrapper";
 
 export function LoginView() {
+  const { execute } = useLogin();
+  const isLoading = useAppSelector(selectAuthLoading);
+  const authError = useAppSelector(selectAuthError);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
+
+  const handleChange = (field: "email" | "password", value: string) => {
+      setFormData((current) => ({
+      ...current,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await execute(formData);
+  };
+
   return (
     <FormWrapper>
       <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 dark:bg-zinc-950">
@@ -25,7 +50,7 @@ export function LoginView() {
             <p className="text-sm text-slate-800">Lubricentro Los 2 Hermanos</p>
           </div>
 
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label className="text-sm text-black font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Correo electrónico
@@ -35,6 +60,9 @@ export function LoginView() {
                 <Input
                   type="email"
                   placeholder="nombre@taller.com"
+                  value={formData.email}
+                  onChange={(event) => handleChange("email", event.target.value)}
+                  disabled={isLoading}
                   className="pl-10 focus-visible:ring-blue-600 text-black"
                 />
               </div>
@@ -55,21 +83,38 @@ export function LoginView() {
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-black" />
                 <Input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
+                  value={formData.password}
+                  onChange={(event) =>
+                    handleChange("password", event.target.value)
+                  }
+                  disabled={isLoading}
                   className="pl-10 focus-visible:ring-blue-600 text-black"
                 />
                 <button
                   type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  aria-label={
+                    showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                  }
                   className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
                 >
-                  <EyeOff size={16} />
+                  {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
                 </button>
               </div>
             </div>
 
-            <Button className="w-full bg-blue-600 py-6 text-base font-semibold hover:bg-blue-700 shadow-lg shadow-blue-200">
-              Acceder al Sistema
+            {authError ? (
+              <p className="text-sm text-red-600">{authError}</p>
+            ) : null}
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-blue-600 py-6 text-base font-semibold hover:bg-blue-700 shadow-lg shadow-blue-200"
+            >
+              {isLoading ? "Ingresando..." : "Acceder al Sistema"}
             </Button>
           </form>
 

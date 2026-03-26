@@ -1,5 +1,5 @@
 import { forwardRef, InputHTMLAttributes, ReactNode } from "react";
-import { cn } from "@/src/shared/utils/classnames";
+import { cn } from "@//shared/utils/classnames";
 
 interface InputWithIconProps extends InputHTMLAttributes<HTMLInputElement> {
   leftIcon?: ReactNode;

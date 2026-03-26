@@ -1,5 +1,5 @@
 import { forwardRef, InputHTMLAttributes } from "react";
-import { cn } from "@/src/shared/utils/classnames";
+import { cn } from "@//shared/utils/classnames";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {}
