@@ -1,23 +1,24 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { ApiResponse } from '@//shared/application/interfaces/api-response.interface';
+import { ACCESS_TOKEN_KEY, AUTH_SESSION_KEY } from '@//shared/constants/auth.constants';
 import { httpClient } from '@//shared/infrastructure/http/http-client';
+import { serializeAuthSession } from '@//shared/infrastructure/lib/auth-session';
 import { cookie } from '@//shared/infrastructure/lib/cookie';
+import { normalizeNavigationModules } from '@//shared/utils/navigation';
 import ApiResponseError, { type ApiResponseErrorType } from '@//shared/utils/error/api-response-errors';
 import { authSlice } from '@//store/slices/auth';
+import type { AuthUser } from '@//types/auth-session';
 import type { LoginType } from '@//types/form-action';
 
-type LoginUser = {
-  id: string;
-  name: string;
-  email: string;
-};
-
 type LoginResponseData = {
-  user: LoginUser;
+  user: AuthUser & {
+    modules?: unknown;
+    menu?: unknown;
+  };
   token: string;
+  modules?: unknown;
+  menu?: unknown;
 };
-
-const ACCESS_TOKEN_KEY = 'access_token';
 
 function formatLoginError(error: unknown): ApiResponseErrorType {
   if (error instanceof ApiResponseError) {
@@ -57,7 +58,7 @@ function formatLoginError(error: unknown): ApiResponseErrorType {
   };
 }
 
-function normalizeLoginResponse(response: ApiResponse<LoginResponseData> | LoginResponseData): LoginResponseData {
+function normalizeLoginResponse(response: ApiResponse<LoginResponseData> | LoginResponseData) {
   const payload = 'data' in response ? response.data : response;
 
   if (!payload?.user || !payload?.token) {
@@ -66,10 +67,24 @@ function normalizeLoginResponse(response: ApiResponse<LoginResponseData> | Login
     });
   }
 
-  return payload;
+  const modules = normalizeNavigationModules(payload.modules ?? payload.menu ?? payload.user.modules ?? payload.user.menu);
+
+  return {
+    user: {
+      id: payload.user.id,
+      name: payload.user.name,
+      email: payload.user.email,
+    },
+    token: payload.token,
+    modules,
+  };
 }
 
-export const sendLogin = createAsyncThunk<LoginResponseData, LoginType, { rejectValue: ApiResponseErrorType }>(
+export const sendLogin = createAsyncThunk<
+  ReturnType<typeof normalizeLoginResponse>,
+  LoginType,
+  { rejectValue: ApiResponseErrorType }
+>(
   'auth/send-login',
   async (params, { dispatch, rejectWithValue }) => {
     dispatch(authSlice.actions.isLoading(true));
@@ -85,8 +100,11 @@ export const sendLogin = createAsyncThunk<LoginResponseData, LoginType, { reject
         authSlice.actions.loginSuccess({
           user: loginData.user,
           token: loginData.token,
+          modules: loginData.modules,
         }),
       );
+
+      cookie.set(AUTH_SESSION_KEY, serializeAuthSession(loginData));
 
       return loginData;
     } catch (error) {
