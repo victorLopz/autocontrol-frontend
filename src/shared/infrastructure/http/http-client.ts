@@ -1,4 +1,3 @@
-import { env } from "@/shared/infrastructure/config/env";
 import {
   buildDefaultHeaders,
   handleHttpError
@@ -15,7 +14,7 @@ interface RequestOptions<TBody = unknown> {
 }
 
 class HttpClient {
-  private readonly baseUrl = env.NEXT_PUBLIC_API_BASE_URL;
+  private readonly baseUrl = "/api-proxy";
 
   async request<TResponse, TBody = unknown>(
     endpoint: string,
